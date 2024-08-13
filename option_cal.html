@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options Calculator</title>
+    <script>
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                // 阻止默认行为，以免触发表单的提交动作
+                event.preventDefault();
+                // 触发按钮的点击事件
+                document.querySelector('button').click();
+            }
+        });
+
+        // document.addEventListener("DOMContentLoaded", function() {
+        //   document.getElementById("ReportDaysCheckbox").addEventListener("change", function() {
+        //     var reportDaysInput = document.getElementById("ReportDays");
+        //     var Days_report_label = document.getElementById("Days_report_id");
+        //     if (this.checked) {
+        //       reportDaysInput.style.display = "block"; // 显示输入字段
+        //       Days_report_label.style.display = "block";
+        //     } else {
+        //       reportDaysInput.style.display = "none"; // 隐藏输入字段
+        //       Days_report_label.style.display = "none";
+        //     }
+        //   });
+        // });
+
+        function calculate() {
+            var IV = parseFloat(document.getElementById("IV").value);
+            var Price = parseFloat(document.getElementById("Price").value);
+            var Days = parseFloat(document.getElementById("Days").value);
+            //var ReportDays = parseFloat(document.getElementById("ReportDays").value);
+
+
+            if(document.getElementById("ReportDaysCheckbox").checked){
+                if(IV < 50){
+                    IV *= 2;
+                }
+            }
+
+            var range_ratio = (IV / 100) * Math.sqrt(Days / 365);
+            var one_standrad = range_ratio * Price;
+            var two_standrad = range_ratio * Price * 2;
+            var third_standrad = range_ratio * Price * 3;
+
+            var percent = 0.7;
+            if(IV > 100){
+                percent = 0.72;
+            }
+            else if(IV < 25)
+            {
+                percent = 0.5;
+            }
+
+            document.getElementById("result").innerHTML = 
+                "Range Ratio: " + (range_ratio * 100).toFixed(2) + "%<br>" +
+                "One Standrad: " + (Price - one_standrad).toFixed(2) + " ~ " + (Price + one_standrad).toFixed(2) + "<br>" +
+                "Two Standrad: " + (Price - two_standrad).toFixed(2) + " ~ " + (Price + two_standrad).toFixed(2) + "<br>" +
+                "Third Standrad: " + (Price - third_standrad).toFixed(2) + " ~ " + (Price + third_standrad).toFixed(2) + "<br>" +
+                "<p style=\"color:red;font-size:25px\">Safe range: " + (Price - two_standrad*percent).toFixed(2) + " ~ " + (Price + two_standrad*percent).toFixed(2) + "</p>" + 
+                "<p style=\"color:red;font-size:25px\">77% Safe 0.6 range: " + (Price - two_standrad*0.6).toFixed(2) + " ~ " + (Price + two_standrad*0.6).toFixed(2) + "</p>" + 
+                "<p style=\"color:red;font-size:25px\">80% Safe 0.65 range: " + (Price - two_standrad*0.65).toFixed(2) + " ~ " + (Price + two_standrad*0.65).toFixed(2) + "</p>" + 
+                "<p style=\"color:red;font-size:25px\">82.5% Safe 0.68 range: " + (Price - two_standrad*0.68).toFixed(2) + " ~ " + (Price + two_standrad*0.68).toFixed(2) + "</p>" + 
+                "<p style=\"color:red;font-size:25px\">83.8% Safe 0.7 range: " + (Price - two_standrad*0.7).toFixed(2) + " ~ " + (Price + two_standrad*0.7).toFixed(2) + "</p>" + 
+                "<p style=\"color:red;font-size:25px\">85% Safe 0.72 range: " + (Price - two_standrad*0.72).toFixed(2) + " ~ " + (Price + two_standrad*0.72).toFixed(2) + "</p>" ;
+        }
+
+
+        function calculatePosition(){
+            var Principal = parseFloat(document.getElementById("Principal").value);
+            var Margin = parseFloat(document.getElementById("Margin").value);
+            var WIN = parseFloat(document.getElementById("WIN").value);
+            var Loss = parseFloat(document.getElementById("Loss").value);
+            var Probability = parseFloat(document.getElementById("Probability").value) / 100;
+
+
+            var b = 1 / Loss
+            var kelly = ((1+b)*Probability - 1)/b;
+
+            var result = (kelly * Principal)
+
+            var shares = Math.round(result / (Loss * WIN));
+
+            var total = result + shares * Margin + Loss * WIN;
+
+            shares = Math.min(Principal / total * shares,shares);
+
+            total = result + shares * Margin + Loss * WIN;
+
+            document.getElementById("result1").innerHTML = "total(include margin&loss):" + total + "<br>" + "percent:" + (total / Principal * 100).toFixed(2) + "%<br>" +  "max return value:" + WIN * shares + "<br>" + "share:" + shares;
+        }
+
+    </script>
+</head>
+<body>
+    <h2>Options Calculator</h2>
+    <label for="IV">IV:</label>
+    <input type="number" id="IV" min="0" step="any">%<br><br>
+    <label for="Price">Price:</label>
+    <input type="number" id="Price" min="0" step="any"><br><br>
+    <label for="Days">Days:</label>
+    <input type="number" id="Days" min="0" step="any"/><br><br>
+    ReportDayInclude<input type="checkbox" id="ReportDaysCheckbox"/><br><br>
+  <!--   <label for="Days_report" id="Days_report_id" style="display: none;">Report Days:</label>
+    <input type="number" id="ReportDays" min="0" step="any" style="display: none;"/><br><br> -->
+    <button type="button" onclick="calculate()">Calculate</button><br><br>
+    <div id="result"></div>
+
+
+    <hr>
+    <h2>Positions Calculator</h2>
+    <label for="Principal">Principal:</label>
+    <input type="number" id="Principal" min="0" step="any"><br><br>
+    <label for="Margin">Margin:</label>
+    <input type="number" id="Margin" min="0" step="any"><br><br>
+    <label for="WIN">MAX WIN:</label>
+    <input type="number" id="WIN" min="0" step="any"><br><br>
+    <label for="Loss">Loss multiple:</label>
+    <input type="number" id="Loss" min="0" step="any" value=2><br><br>
+
+    <label for="Probability">Profit Probability:</label>
+    <input type="number" id="Probability" min="0" step="any">%<br><br>
+
+    <button onclick="calculatePosition()">Calculate</button><br><br>
+    <div id="result1"></div>
+
+</body>
+</html>
